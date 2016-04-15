@@ -57,7 +57,7 @@ func GraphiteOnce(c GraphiteConfig) error {
 
 func graphite(c *GraphiteConfig) error {
 	now := time.Now().Unix()
-	fmt.Println(c.Addr)
+	du := float64(c.DurationUnit)
 	conn, err := net.DialTimeout("tcp", c.Addr, 5*time.Second)
 	if nil != err {
 		return err
@@ -94,28 +94,29 @@ func graphite(c *GraphiteConfig) error {
 			buf.WriteString(fmt.Sprintf("%s.%s.five-minute %.2f %d\n", c.Prefix, name, m.Rate5(), now))
 			buf.WriteString(fmt.Sprintf("%s.%s.fifteen-minute %.2f %d\n", c.Prefix, name, m.Rate15(), now))
 			buf.WriteString(fmt.Sprintf("%s.%s.mean %.2f %d\n", c.Prefix, name, m.RateMean(), now))
-		//case metrics.Timer:
-		//	t := metric.Snapshot()
-		//	ps := t.Percentiles(c.Percentiles)
-		//	fmt.Fprintf(w, "%s.%s.count %d %d\n", c.Prefix, name, t.Count(), now)
-		//	fmt.Fprintf(w, "%s.%s.min %d %d\n", c.Prefix, name, t.Min()/int64(du), now)
-		//	fmt.Fprintf(w, "%s.%s.max %d %d\n", c.Prefix, name, t.Max()/int64(du), now)
-		//	fmt.Fprintf(w, "%s.%s.mean %.2f %d\n", c.Prefix, name, t.Mean()/du, now)
-		//	fmt.Fprintf(w, "%s.%s.std-dev %.2f %d\n", c.Prefix, name, t.StdDev()/du, now)
-		//	for psIdx, psKey := range c.Percentiles {
-		//		key := strings.Replace(strconv.FormatFloat(psKey*100.0, 'f', -1, 64), ".", "", 1)
-		//		fmt.Fprintf(w, "%s.%s.%s-percentile %.2f %d\n", c.Prefix, name, key, ps[psIdx]/du, now)
-		//	}
-		//	fmt.Fprintf(w, "%s.%s.one-minute %.2f %d\n", c.Prefix, name, t.Rate1(), now)
-		//	fmt.Fprintf(w, "%s.%s.five-minute %.2f %d\n", c.Prefix, name, t.Rate5(), now)
-		//	fmt.Fprintf(w, "%s.%s.fifteen-minute %.2f %d\n", c.Prefix, name, t.Rate15(), now)
-		//	fmt.Fprintf(w, "%s.%s.mean-rate %.2f %d\n", c.Prefix, name, t.RateMean(), now)
+		case metrics.Timer:
+			t := metric.Snapshot()
+			ps := t.Percentiles(c.Percentiles)
+			buf.WriteString(fmt.Sprintf("%s.%s.count %d %d\n", c.Prefix, name, t.Count(), now))
+			buf.WriteString(fmt.Sprintf("%s.%s.min %d %d\n", c.Prefix, name, t.Min()/int64(du), now))
+			buf.WriteString(fmt.Sprintf("%s.%s.max %d %d\n", c.Prefix, name, t.Max()/int64(du), now))
+			buf.WriteString(fmt.Sprintf("%s.%s.mean %.2f %d\n", c.Prefix, name, t.Mean()/du, now))
+			buf.WriteString(fmt.Sprintf("%s.%s.std-dev %.2f %d\n", c.Prefix, name, t.StdDev()/du, now))
+			for psIdx, psKey := range c.Percentiles {
+				key := strings.Replace(strconv.FormatFloat(psKey*100.0, 'f', -1, 64), ".", "", 1)
+				buf.WriteString(fmt.Sprintf("%s.%s.%s-percentile %.2f %d\n", c.Prefix, name, key, ps[psIdx]/du, now))
+			}
+			buf.WriteString(fmt.Sprintf("%s.%s.one-minute %.2f %d\n", c.Prefix, name, t.Rate1(), now))
+			buf.WriteString(fmt.Sprintf("%s.%s.five-minute %.2f %d\n", c.Prefix, name, t.Rate5(), now))
+			buf.WriteString(fmt.Sprintf("%s.%s.fifteen-minute %.2f %d\n", c.Prefix, name, t.Rate15(), now))
+			buf.WriteString(fmt.Sprintf("%s.%s.mean-rate %.2f %d\n", c.Prefix, name, t.RateMean(), now))
 		}
 
 
 		_, err := conn.Write(buf.Bytes())
 		if err != nil {
-			fmt.Println(err)
+			return err
+			break
 		}
 	})
 	return nil
