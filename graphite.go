@@ -8,14 +8,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rcrowley/go-metrics"
 	"bytes"
+	"github.com/rcrowley/go-metrics"
 )
 
 // GraphiteConfig provides a container with configuration parameters for
 // the Graphite exporter
 type GraphiteConfig struct {
-	Addr          string     // Network address to connect to
+	Addr          string           // Network address to connect to
 	Registry      metrics.Registry // Registry to be exported
 	FlushInterval time.Duration    // Flush interval
 	DurationUnit  time.Duration    // Time conversion unit for durations
@@ -81,7 +81,7 @@ func graphite(c *GraphiteConfig) error {
 			buf.WriteString(fmt.Sprintf("%s.%s.std-dev %.2f %d\n", c.Prefix, name, h.StdDev(), now))
 			for psIdx, psKey := range c.Percentiles {
 				key := strings.Replace(strconv.FormatFloat(psKey*100.0, 'f', -1, 64), ".", "", 1)
-				buf.WriteString(fmt.Sprintf("%s.%s.%s-precentile %.2f %d\n", c.Prefix, name,key,ps[psIdx], now))
+				buf.WriteString(fmt.Sprintf("%s.%s.%s-precentile %.2f %d\n", c.Prefix, name, key, ps[psIdx], now))
 			}
 		case metrics.Meter:
 			m := metric.Snapshot()
@@ -107,7 +107,6 @@ func graphite(c *GraphiteConfig) error {
 			buf.WriteString(fmt.Sprintf("%s.%s.fifteen-minute %.2f %d\n", c.Prefix, name, t.Rate15(), now))
 			buf.WriteString(fmt.Sprintf("%s.%s.mean-rate %.2f %d\n", c.Prefix, name, t.RateMean(), now))
 		}
-
 
 		conn.Write(buf.Bytes())
 	})
