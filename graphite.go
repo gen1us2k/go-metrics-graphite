@@ -113,11 +113,7 @@ func graphite(c *GraphiteConfig) error {
 		}
 
 
-		_, err := conn.Write(buf.Bytes())
-		if err != nil {
-			return err
-			break
-		}
+		conn.Write(buf.Bytes())
 	})
 	return nil
 }
