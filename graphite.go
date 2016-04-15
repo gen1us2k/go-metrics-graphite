@@ -64,11 +64,9 @@ func graphite(c *GraphiteConfig) error {
 	}
 	defer conn.Close()
 	buf := bytes.NewBufferString("")
-	fmt.Println(c.Registry)
 	c.Registry.Each(func(name string, i interface{}) {
 		switch metric := i.(type) {
 		case metrics.Counter:
-			fmt.Println("Counter")
 			fmt.Println(fmt.Sprintf("%s.%s %d %d\n", c.Prefix, name, metric.Count(), now))
 			buf.WriteString(fmt.Sprintf("%s.%s %d %d\n", c.Prefix, name, metric.Count(), now))
 		case metrics.Gauge:
