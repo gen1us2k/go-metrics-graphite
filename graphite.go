@@ -41,7 +41,6 @@ func Graphite(r metrics.Registry, d time.Duration, prefix string, addr string) {
 // but it takes a GraphiteConfig instead.
 func GraphiteWithConfig(c GraphiteConfig) {
 	for _ = range time.Tick(c.FlushInterval) {
-		fmt.Println("Runnin'")
 		if err := graphite(&c); nil != err {
 			log.Println(err)
 		}
@@ -67,7 +66,6 @@ func graphite(c *GraphiteConfig) error {
 	c.Registry.Each(func(name string, i interface{}) {
 		switch metric := i.(type) {
 		case metrics.Counter:
-			fmt.Println(fmt.Sprintf("%s.%s %d %d\n", c.Prefix, name, metric.Count(), now))
 			buf.WriteString(fmt.Sprintf("%s.%s %d %d\n", c.Prefix, name, metric.Count(), now))
 		case metrics.Gauge:
 			buf.WriteString(fmt.Sprintf("%s.%s %d %d\n", c.Prefix, name, metric.Value(), now))
